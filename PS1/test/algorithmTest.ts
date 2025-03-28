@@ -8,6 +8,8 @@ import {
   getHint,
   computeProgress,
 } from "../src/algorithm";
+import { expect } from "chai";
+import { createGeneralCard } from "../src/utils";
 
 /*
  * Testing strategy for toBucketSets():
@@ -15,11 +17,47 @@ import {
  * TODO: Describe your testing strategy for toBucketSets() here.
  */
 describe("toBucketSets()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("when given empty BucketMap then should return empty array", () => {
+    const buckets: BucketMap = new Map();
+
+    expect(toBucketSets(buckets)).to.deep.equal([]);
   });
+
+  it("when given BucketMap with single set of flashcards with index = 0 then should correctly convert", () => {
+    const buckets: BucketMap = new Map();
+    const card1 = createGeneralCard("Card1");
+    buckets.set(0, new Set([card1]));
+
+    expect(toBucketSets(buckets)).to.deep.equal([new Set([card1])]);
+  });
+
+  it("when given BucketMap with single set of flashcards with index > 0 then should correctly convert", () => {
+    const buckets: BucketMap = new Map();
+    const card1 = createGeneralCard("Card1");
+    buckets.set(2, new Set([card1]));
+
+    expect(toBucketSets(buckets)).to.deep.equal([new Set([]), new Set([]), new Set([card1])]);
+  });
+
+  it("it should handle multiple buckets with non-sequential indices",() => {
+    const buckets: BucketMap = new Map();
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+
+    buckets.set(1, new Set([card1]));
+    buckets.set(3, new Set([card2]));
+
+    expect(toBucketSets(buckets)).to.deep.equal([new Set([]), new Set([card1]), new Set([]), new Set([card2])]);
+
+  });
+
+  it("it should return an array of empty sets if all buckets are empty", () => {
+    const buckets: BucketMap = new Map();
+    buckets.set(0, new Set([]));
+    buckets.set(1, new Set([]));
+
+    expect(toBucketSets(buckets)).to.deep.equal([new Set(), new Set()]);
+});
 });
 
 /*
