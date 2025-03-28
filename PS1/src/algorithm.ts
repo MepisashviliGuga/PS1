@@ -20,8 +20,21 @@ import { createGeneralCard } from "../src/utils";
  * @spec.requires buckets is a valid representation of flashcard buckets.
  */
 export function toBucketSets(buckets: BucketMap): Array<Set<Flashcard>> {
-  // TODO: Implement this function
-  throw new Error("Implement me!");
+  if (buckets.size === 0)
+    return [];
+
+  const maxBucket = Math.max(...Array.from(buckets.keys()));
+
+  const result: Array<Set<Flashcard>> = Array.from(
+    { length: maxBucket + 1},
+    () => new Set<Flashcard>()
+  );
+
+  buckets.forEach((cards, bucketIndex) => {
+    result[bucketIndex] = cards;
+  });
+
+  return result;
 }
 
 /**
