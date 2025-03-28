@@ -159,10 +159,61 @@ describe("practice()", () => {
  * TODO: Describe your testing strategy for update() here.
  */
 describe("update()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("when card puts in bucket 0 because answer was difficult", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    const card4 = createGeneralCard("card4");
+    const card5 = createGeneralCard("card5");
+    const card6 = createGeneralCard("card6");
+
+    const buckets: BucketMap = new Map();
+    buckets.set(0, new Set([card1, card2, card3]));
+    buckets.set(2, new Set([card4, card5]));
+    buckets.set(4, new Set([card6]));
+
+    const updatedBuckets = update(buckets, card4, AnswerDifficulty.Wrong);
+
+    expect(updatedBuckets.get(2)?.has(card4)).to.deep.equal(false);
+    expect(updatedBuckets.get(0)?.has(card4)).to.deep.equal(true);
+  });
+
+  it("when card moves up to bucket i + 1 because answered easy", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    const card4 = createGeneralCard("card4");
+    const card5 = createGeneralCard("card5");
+    const card6 = createGeneralCard("card6");
+
+    const buckets: BucketMap = new Map();
+    buckets.set(0, new Set([card1, card2, card3]));
+    buckets.set(2, new Set([card4, card5]));
+    buckets.set(4, new Set([card6]));
+
+    const updatedBuckets = update(buckets, card4, AnswerDifficulty.Easy);
+
+    expect(updatedBuckets.get(2)?.has(card4)).to.deep.equal(false);
+    expect(updatedBuckets.get(3)?.has(card4)).to.deep.equal(true);
+  });
+
+  it("when card moves down to bucket i - 1 because answered Hard", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    const card4 = createGeneralCard("card4");
+    const card5 = createGeneralCard("card5");
+    const card6 = createGeneralCard("card6");
+
+    const buckets: BucketMap = new Map();
+    buckets.set(0, new Set([card1, card2, card3]));
+    buckets.set(2, new Set([card4, card5]));
+    buckets.set(4, new Set([card6]));
+
+    const updatedBuckets = update(buckets, card4, AnswerDifficulty.Hard);
+
+    expect(updatedBuckets.get(2)?.has(card4)).to.deep.equal(false);
+    expect(updatedBuckets.get(1)?.has(card4)).to.deep.equal(true);
   });
 });
 
