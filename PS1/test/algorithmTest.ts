@@ -11,11 +11,6 @@ import {
 import { expect } from "chai";
 import { createGeneralCard } from "../src/utils";
 
-/*
- * Testing strategy for toBucketSets():
- *
- * TODO: Describe your testing strategy for toBucketSets() here.
- */
 describe("toBucketSets()", () => {
   it("when given empty BucketMap then should return empty array", () => {
     const buckets: BucketMap = new Map();
@@ -57,13 +52,18 @@ describe("toBucketSets()", () => {
     buckets.set(1, new Set([]));
 
     expect(toBucketSets(buckets)).to.deep.equal([new Set(), new Set()]);
-});
+
+  });
 });
 
 /*
  * Testing strategy for getBucketRange():
  *
- * TODO: Describe your testing strategy for getBucketRange() here.
+ * I am going to check following situations, when given:
+ * 1. empty array
+ * 2. array with empty sets
+ * 3. array with only one set with flashcard in it.
+ * 4. array with multiple non-empty sets, which starts and ends with sequence of empty sets
  */
 describe("getBucketRange()", () => {
   it("it should return undefined when given empty array", () => {
@@ -94,18 +94,27 @@ describe("getBucketRange()", () => {
     const buckets :Array<Set<Flashcard>> = [new Set([]), new Set([card1, card2]), new Set([]), new Set([card3, card4]), new Set([])];
 
     expect(getBucketRange(buckets)).to.deep.equal({ minBucket: 1, maxBucket: 3});
+  });
 });
-});
+
 /*
  * Testing strategy for practice():
  *
- * TODO: Describe your testing strategy for practice() here.
+ * partitions for bucket:
+ * 1. bucket is empty
+ * 2. bucket is singe set
+ * 3. bucket is multiple
+ * 
+ * partition for days:
+ * 1. day = 0
+ * 2. say = 2*n - 1
+ * 3. day > 0
  */
 describe("practice()", () => {
   it("should return empty set if there are no flashcards", () => {
     const buckets: Array<Set<Flashcard>> = [];
 
-    expect(practice(buckets, 0)).to.deep.equal(new Set());
+    expect(practice(buckets, 1)).to.deep.equal(new Set());
     expect(practice(buckets, 3)).to.deep.equal(new Set());
     expect(practice(buckets, 1)).to.deep.equal(new Set());
     expect(practice(buckets, 30)).to.deep.equal(new Set());
@@ -121,7 +130,7 @@ describe("practice()", () => {
       new Set([card1, card2, card3]), // Bucket 0 (review daily)
     ];
 
-    expect(practice(buckets, 0)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 1)).to.deep.equal(zeroBucketList);
     expect(practice(buckets, 3)).to.deep.equal(zeroBucketList);
     expect(practice(buckets, 23)).to.deep.equal(zeroBucketList);
   });
@@ -133,6 +142,7 @@ describe("practice()", () => {
     const card4 = createGeneralCard("card4");
     const card5 = createGeneralCard("card5");
     const card6 = createGeneralCard("card6");
+    const card7 = createGeneralCard("card7");
     
     const zeroBucketList = new Set([card1, card2, card3]);
 
@@ -140,23 +150,26 @@ describe("practice()", () => {
 
     const buckets: Array<Set<Flashcard>> = [
       zeroBucketList,
-      new Set(),
+      new Set([card7]),
       thirdBucketList,
       new Set(),
       new Set([card6])
     ];
 
-    expect(practice(buckets, 0)).to.deep.equal(zeroBucketList);
     expect(practice(buckets, 1)).to.deep.equal(zeroBucketList);
-    expect(practice(buckets, 3)).to.deep.equal([zeroBucketList, thirdBucketList]);
-    expect(practice(buckets, 15)).to.deep.equal([zeroBucketList, thirdBucketList, card6]);
+    expect(practice(buckets, 2)).to.deep.equal(new Set([card1, card2, card3, card7]));
+    expect(practice(buckets, 3)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 32)).to.deep.equal(new Set([card1, card2, card3, card7, card4, card5, card6]));
   });
 });
 
 /*
  * Testing strategy for update():
  *
- * TODO: Describe your testing strategy for update() here.
+ * consider all updates:
+ * 1. card put in bucket 0
+ * 2. card moves up from bucket i to bucket i+1
+ * 3. card moves down to bucket i - 1
  */
 describe("update()", () => {
   it("when card puts in bucket 0 because answer was difficult", () => {
@@ -215,6 +228,8 @@ describe("update()", () => {
     expect(updatedBuckets.get(2)?.has(card4)).to.deep.equal(false);
     expect(updatedBuckets.get(1)?.has(card4)).to.deep.equal(true);
   });
+
+
 });
 
 /*
@@ -222,12 +237,18 @@ describe("update()", () => {
  *
  * TODO: Describe your testing strategy for getHint() here.
  */
-describe("getHint()", () => {
-  it("should return the original hint field from the Flashcard", () => {
-    const card = new Flashcard("What is 2+2?", "4", "It's a small even number", []);
-    expect(getHint(card)).to.equal(card.hint);
+describe("getHint() - strong spec", () => {
+  it("should return the first word of the front with ellipsis", () => {
+    const card = new Flashcard("Capital of France?", "Paris", "not used", []);
+    expect(getHint(card)).to.equal("Capital...");
+  });
+
+  it("should return full word with ellipsis when front is one word", () => {
+    const card = new Flashcard("Photosynthesis", "Process", "not used", []);
+    expect(getHint(card)).to.equal("Photosynthesis...");
   });
 });
+
 
 /*
  * Testing strategy for computeProgress():
@@ -235,9 +256,42 @@ describe("getHint()", () => {
  * TODO: Describe your testing strategy for computeProgress() here.
  */
 describe("computeProgress()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("should return correct stats for basic data", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+
+    const buckets: BucketMap = new Map();
+    buckets.set(0, new Set([card1]));
+    buckets.set(1, new Set([card2, card3]));
+
+    const history = [
+      { card: card1, difficulty: AnswerDifficulty.Easy },
+      { card: card2, difficulty: AnswerDifficulty.Wrong },
+      { card: card3, difficulty: AnswerDifficulty.Hard },
+    ];
+
+    const expected = {
+      totalFlashcards: 3,
+      bucketDistribution: { 0: 1, 1: 2 },
+      accuracyRate: 2 / 3,
+      reviewsPerBucket: { 0: 1, 1: 2 },
+    };
+
+    expect(computeProgress(buckets, history)).to.deep.equal(expected);
+  });
+
+  it("should return zero stats when everything is empty", () => {
+    const buckets: BucketMap = new Map();
+    const history: Array<{ card: Flashcard, difficulty: AnswerDifficulty }> = [];
+
+    const expected = {
+      totalFlashcards: 0,
+      bucketDistribution: {},
+      accuracyRate: 0,
+      reviewsPerBucket: {},
+    };
+
+    expect(computeProgress(buckets, history)).to.deep.equal(expected);
   });
 });

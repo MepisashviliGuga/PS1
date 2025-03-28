@@ -11,22 +11,13 @@
 import { Flashcard, AnswerDifficulty, BucketMap } from "./flashcards";
 import { expect } from "chai";
 import { createGeneralCard } from "../src/utils";
-/**
- * Converts a Map representation of learning buckets into an Array-of-Set representation.
- *
- * @param buckets Map where keys are bucket numbers and values are sets of Flashcards.
- * @returns Array of Sets, where element at index i is the set of flashcards in bucket i.
- *          Buckets with no cards will have empty sets in the array.
- * @spec.requires buckets is a valid representation of flashcard buckets.
- */
 export function toBucketSets(buckets: BucketMap): Array<Set<Flashcard>> {
-  if (buckets.size === 0)
-    return [];
+  if (buckets.size === 0) return [];
 
   const maxBucket = Math.max(...Array.from(buckets.keys()));
 
   const result: Array<Set<Flashcard>> = Array.from(
-    { length: maxBucket + 1},
+    { length: maxBucket + 1 },
     () => new Set<Flashcard>()
   );
 
@@ -49,18 +40,18 @@ export function getBucketRange(
   buckets: Array<Set<Flashcard>>
 ): { minBucket: number; maxBucket: number } | undefined {
   let minBucket: number | undefined = undefined;
-   let maxBucket: number | undefined = undefined;
- 
-   buckets.forEach((cards, bucketIndex) => {
-     if (cards.size > 0) {
-       if (minBucket === undefined) minBucket = bucketIndex;
-       maxBucket = bucketIndex;
-     }
-   });
- 
-   return minBucket !== undefined && maxBucket !== undefined
-     ? { minBucket, maxBucket }
-     : undefined;
+  let maxBucket: number | undefined = undefined;
+
+  buckets.forEach((cards, bucketIndex) => {
+    if (cards.size > 0) {
+      if (minBucket === undefined) minBucket = bucketIndex;
+      maxBucket = bucketIndex;
+    }
+  });
+
+  return minBucket !== undefined && maxBucket !== undefined
+    ? { minBucket, maxBucket }
+    : undefined;
 }
 
 /**
@@ -77,14 +68,14 @@ export function practice(
   day: number
 ): Set<Flashcard> {
   const reviewSet = new Set<Flashcard>();
- 
-   buckets.forEach((cards, bucketIndex) => {
-     if ((day + 1) % 2 ** bucketIndex === 0) {
-       cards.forEach((card) => reviewSet.add(card));
-     }
-   });
- 
-   return reviewSet;
+
+  buckets.forEach((cards, bucketIndex) => {
+    if (day % (2 ** bucketIndex) === 0) {
+      cards.forEach(card => reviewSet.add(card));
+    }
+  });
+
+  return reviewSet;
 }
 
 /**
@@ -102,60 +93,113 @@ export function update(
   difficulty: AnswerDifficulty
 ): BucketMap {
   const updatedBuckets: BucketMap = new Map();
- 
-   for (const [index, cards] of buckets.entries()) {
-     updatedBuckets.set(index, new Set(cards));
-   }
- 
-   let currentBucket = -1;
-   for (const [index, cards] of updatedBuckets.entries()) {
-     if (cards.has(card)) {
-       currentBucket = index;
-       cards.delete(card); 
-       break;
-     }
-   }
- 
-   let newBucket: number;
-   if (difficulty === AnswerDifficulty.Wrong) {
-     newBucket = 0;
-   } else if (difficulty === AnswerDifficulty.Hard) {
-     newBucket = Math.max(0, currentBucket - 1);
-   } else { 
-     newBucket = currentBucket + 1;
-   }
- 
-   if (!updatedBuckets.has(newBucket)) {
-     updatedBuckets.set(newBucket, new Set());
-   }
- 
-   updatedBuckets.get(newBucket)!.add(card);
- 
-   return updatedBuckets;
+
+  for (const [index, cards] of buckets.entries()) {
+    updatedBuckets.set(index, new Set(cards));
+  }
+
+  let currentBucket = -1;
+  for (const [index, cards] of updatedBuckets.entries()) {
+    if (cards.has(card)) {
+      currentBucket = index;
+      cards.delete(card); 
+      break;
+    }
+  }
+
+  let newBucket: number;
+  if (difficulty === AnswerDifficulty.Wrong) {
+    newBucket = 0;
+  } else if (difficulty === AnswerDifficulty.Hard) {
+    newBucket = Math.max(0, currentBucket - 1);
+  } else { 
+    newBucket = currentBucket + 1;
+  }
+
+  if (!updatedBuckets.has(newBucket)) {
+    updatedBuckets.set(newBucket, new Set());
+  }
+
+  updatedBuckets.get(newBucket)!.add(card);
+
+  return updatedBuckets;
 }
 
 /**
- * Generates a hint for a flashcard.
+ * Generates a hint based on the flashcard front.
  *
- * @param card flashcard to hint
- * @returns a hint for the front of the flashcard.
- * @spec.requires card is a valid Flashcard.
+ * @param card flashcard to generate hint from
+ * @returns the first word of the flashcard front, followed by '...'
+ *          Example: front = "What is 2+2?" → hint = "What..."
+ * @spec.requires card.front is a non-empty string
  */
+
 export function getHint(card: Flashcard): string {
-  // TODO: Implement this function (and strengthen the spec!)
-  throw new Error("Implement me!");
+  const firstWord = card.front.trim().split(" ")[0];
+  return firstWord + "...";
 }
+
 
 /**
  * Computes statistics about the user's learning progress.
  *
- * @param buckets representation of learning buckets.
- * @param history representation of user's answer history.
- * @returns statistics about learning progress.
- * @spec.requires [SPEC TO BE DEFINED]
+ * @param buckets Map representation of learning buckets.
+ * @param history Array of objects representing user's answer history,
+ *                each with a `card` (Flashcard) and `difficulty` (AnswerDifficulty).
+ * @returns an object containing:
+ *   - totalFlashcards: total number of unique flashcards across all buckets.
+ *   - bucketDistribution: a mapping from bucket number to number of cards.
+ *   - accuracyRate: proportion of correct answers in history (Easy and Hard considered correct).
+ *   - reviewsPerBucket: mapping from bucket number to how many cards were reviewed from it.
+ * @spec.requires:
+ *   - `buckets` is a valid BucketMap.
+ *   - `history` contains only cards that appear in some bucket.
  */
-export function computeProgress(buckets: any, history: any): any {
-  // Replace 'any' with appropriate types
-  // TODO: Implement this function (and define the spec!)
-  throw new Error("Implement me!");
+
+export function computeProgress(
+  buckets: BucketMap,
+  history: Array<{ card: Flashcard; difficulty: AnswerDifficulty }>
+): {
+  totalFlashcards: number;
+  bucketDistribution: Record<number, number>;
+  accuracyRate: number;
+  reviewsPerBucket: Record<number, number>;
+} {
+  const bucketDistribution: Record<number, number> = {};
+  const reviewsPerBucket: Record<number, number> = {};
+  let correctAnswers = 0;
+  const allCards = new Set<Flashcard>();
+
+  // Count total cards and distribution
+  for (const [bucketNum, cards] of buckets.entries()) {
+    bucketDistribution[bucketNum] = cards.size;
+    cards.forEach((card) => allCards.add(card));
+  }
+
+  // Count review history
+  for (const entry of history) {
+    const card = entry.card;
+    const difficulty = entry.difficulty;
+
+    // Find which bucket this card is in
+    for (const [bucketNum, cards] of buckets.entries()) {
+      if (cards.has(card)) {
+        reviewsPerBucket[bucketNum] = (reviewsPerBucket[bucketNum] || 0) + 1;
+        break;
+      }
+    }
+
+    if (difficulty !== AnswerDifficulty.Wrong) {
+      correctAnswers += 1;
+    }
+  }
+
+  const accuracyRate = history.length === 0 ? 0 : correctAnswers / history.length;
+
+  return {
+    totalFlashcards: allCards.size,
+    bucketDistribution,
+    accuracyRate,
+    reviewsPerBucket,
+  };
 }
