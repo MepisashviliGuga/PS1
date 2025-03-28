@@ -101,8 +101,37 @@ export function update(
   card: Flashcard,
   difficulty: AnswerDifficulty
 ): BucketMap {
-  // TODO: Implement this function
-  throw new Error("Implement me!");
+  const updatedBuckets: BucketMap = new Map();
+ 
+   for (const [index, cards] of buckets.entries()) {
+     updatedBuckets.set(index, new Set(cards));
+   }
+ 
+   let currentBucket = -1;
+   for (const [index, cards] of updatedBuckets.entries()) {
+     if (cards.has(card)) {
+       currentBucket = index;
+       cards.delete(card); 
+       break;
+     }
+   }
+ 
+   let newBucket: number;
+   if (difficulty === AnswerDifficulty.Wrong) {
+     newBucket = 0;
+   } else if (difficulty === AnswerDifficulty.Hard) {
+     newBucket = Math.max(0, currentBucket - 1);
+   } else { 
+     newBucket = currentBucket + 1;
+   }
+ 
+   if (!updatedBuckets.has(newBucket)) {
+     updatedBuckets.set(newBucket, new Set());
+   }
+ 
+   updatedBuckets.get(newBucket)!.add(card);
+ 
+   return updatedBuckets;
 }
 
 /**
