@@ -223,10 +223,9 @@ describe("update()", () => {
  * TODO: Describe your testing strategy for getHint() here.
  */
 describe("getHint()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("should return the original hint field from the Flashcard", () => {
+    const card = new Flashcard("What is 2+2?", "4", "It's a small even number", []);
+    expect(getHint(card)).to.equal(card.hint);
   });
 });
 
