@@ -66,13 +66,36 @@ describe("toBucketSets()", () => {
  * TODO: Describe your testing strategy for getBucketRange() here.
  */
 describe("getBucketRange()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("it should return undefined when given empty array", () => {
+    const buckets :Array<Set<Flashcard>> = [];
+    
+    expect(getBucketRange(buckets)).to.deep.equal(undefined);
   });
-});
 
+  it("it should return undefined again when given array with empty sets", () => {
+    const buckets :Array<Set<Flashcard>> = [new Set([]), new Set([])];
+    
+    expect(getBucketRange(buckets)).to.deep.equal(undefined);
+  });
+
+  it("it should return correct index when given array with only one non-empty set", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const buckets :Array<Set<Flashcard>> = [new Set([]), new Set([card1, card2]), new Set([])];
+    
+    expect(getBucketRange(buckets)).to.deep.equal({ minBucket: 1, maxBucket: 1});
+  });
+
+  it("it should return correct indeces when given array with multiple non-empty sets", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    const card4 = createGeneralCard("card4");
+    const buckets :Array<Set<Flashcard>> = [new Set([]), new Set([card1, card2]), new Set([]), new Set([card3, card4]), new Set([])];
+
+    expect(getBucketRange(buckets)).to.deep.equal({ minBucket: 1, maxBucket: 3});
+});
+});
 /*
  * Testing strategy for practice():
  *
