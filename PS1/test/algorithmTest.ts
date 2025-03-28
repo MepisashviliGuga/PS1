@@ -102,10 +102,54 @@ describe("getBucketRange()", () => {
  * TODO: Describe your testing strategy for practice() here.
  */
 describe("practice()", () => {
-  it("Example test case - replace with your own tests", () => {
-    assert.fail(
-      "Replace this test case with your own tests based on your testing strategy"
-    );
+  it("should return empty set if there are no flashcards", () => {
+    const buckets: Array<Set<Flashcard>> = [];
+
+    expect(practice(buckets, 0)).to.deep.equal(new Set());
+    expect(practice(buckets, 3)).to.deep.equal(new Set());
+    expect(practice(buckets, 1)).to.deep.equal(new Set());
+    expect(practice(buckets, 30)).to.deep.equal(new Set());
+  });
+
+  it("when we have only one set in bucket", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    
+    const zeroBucketList = new Set([card1, card2, card3]);
+    const buckets: Array<Set<Flashcard>> = [
+      new Set([card1, card2, card3]), // Bucket 0 (review daily)
+    ];
+
+    expect(practice(buckets, 0)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 3)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 23)).to.deep.equal(zeroBucketList);
+  });
+
+  it("where we have multiple sets in bucket", () => {
+    const card1 = createGeneralCard("card1");
+    const card2 = createGeneralCard("card2");
+    const card3 = createGeneralCard("card3");
+    const card4 = createGeneralCard("card4");
+    const card5 = createGeneralCard("card5");
+    const card6 = createGeneralCard("card6");
+    
+    const zeroBucketList = new Set([card1, card2, card3]);
+
+    const thirdBucketList = new Set([card4, card5]);   
+
+    const buckets: Array<Set<Flashcard>> = [
+      zeroBucketList,
+      new Set(),
+      thirdBucketList,
+      new Set(),
+      new Set([card6])
+    ];
+
+    expect(practice(buckets, 0)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 1)).to.deep.equal(zeroBucketList);
+    expect(practice(buckets, 3)).to.deep.equal([zeroBucketList, thirdBucketList]);
+    expect(practice(buckets, 15)).to.deep.equal([zeroBucketList, thirdBucketList, card6]);
   });
 });
 
