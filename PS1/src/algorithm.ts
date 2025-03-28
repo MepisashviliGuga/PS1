@@ -76,8 +76,15 @@ export function practice(
   buckets: Array<Set<Flashcard>>,
   day: number
 ): Set<Flashcard> {
-  // TODO: Implement this function
-  throw new Error("Implement me!");
+  const reviewSet = new Set<Flashcard>();
+ 
+   buckets.forEach((cards, bucketIndex) => {
+     if ((day + 1) % 2 ** bucketIndex === 0) {
+       cards.forEach((card) => reviewSet.add(card));
+     }
+   });
+ 
+   return reviewSet;
 }
 
 /**
